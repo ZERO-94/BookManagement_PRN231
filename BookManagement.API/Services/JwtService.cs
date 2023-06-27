@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BookManagement.Infrastructure.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -13,20 +14,20 @@ namespace BookManagement.API.Extensions
         public JwtService(IConfiguration config) {
             _config = config;
         }
-        public string GenerateJSONWebToken(string username)
+        public string GenerateJSONWebToken(Account account)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, username),
-                new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, "User")
+                new Claim(ClaimTypes.NameIdentifier, account.Username),
+                new Claim(ClaimTypes.Name, account.Username),
+                new Claim(ClaimTypes.Role, account.Role.GetDescription())
         };
 
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],
               _config["Jwt:Issuer"],
-              null,
+              claims,
               expires: DateTime.Now.AddMinutes(120),
               signingCredentials: credentials);
 

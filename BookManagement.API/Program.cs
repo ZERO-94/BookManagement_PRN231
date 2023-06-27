@@ -1,7 +1,9 @@
 using BookManagement.API.Extensions;
 using BookManagement.Infrastructure.Data;
 using BookManagement.Infrastructure.Models;
+using BookManagement.Infrastructure.Repositories.AccountRepository;
 using BookManagement.Infrastructure.Repositories.BookRepository;
+using BookManagement.Infrastructure.Repositories.PressRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.OData;
 using Microsoft.AspNetCore.OData.Routing;
@@ -51,7 +53,33 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 }
 );
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "BookManagment API", Version = "v1" });
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
 
 
 builder.Services.AddCors(options =>
@@ -66,6 +94,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IBookRepository, BookRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IPressRepository, PressRepository>();
 
 var app = builder.Build();
 

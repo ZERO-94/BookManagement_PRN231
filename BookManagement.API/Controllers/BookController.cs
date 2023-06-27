@@ -1,6 +1,7 @@
 ﻿using BookManagement.API.Models.Requests;
 using BookManagement.Infrastructure.Models;
 using BookManagement.Infrastructure.Repositories.BookRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
@@ -10,6 +11,7 @@ namespace BookManagement.API.Controllers
 {
     [ApiController]
     [Route("books")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
     public class BookController : ODataController
     {
 
