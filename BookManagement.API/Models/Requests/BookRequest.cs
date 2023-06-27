@@ -2,7 +2,7 @@
 
 namespace BookManagement.API.Models.Requests
 {
-    public class CreateBookRequest
+    public class BookRequest
     {
         public string ISBN { get; set; }
         public string Title { get; set; }

@@ -14,8 +14,6 @@ namespace BookManagement.Infrastructure.Models
         public string Title { get; set; }
         public string Author { get; set; }
         public decimal Price { get; set; }
-        public int AddressId { get; set; }
-        [ForeignKey("AddressId")]
         public Address Location { get; set; }
         public int PressId { get; set; }
         public Press Press { get; set; }

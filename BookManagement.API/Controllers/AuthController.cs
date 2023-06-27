@@ -1,5 +1,6 @@
 ﻿using BookManagement.API.Extensions;
 using BookManagement.API.Models.Requests;
+using BookManagement.Infrastructure.Models;
 using BookManagement.Infrastructure.Repositories.AccountRepository;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +23,7 @@ namespace BookManagement.API.Controllers
         public async Task<IActionResult> login([FromBody] LoginRequest request)
         {
 
-            var account = _accountRepository.FirstOrDefault(expression: x => x.Username == request.Username && x.Password == request.Password && x.Role == Infrastructure.Models.Role.Admin);
+            var account = _accountRepository.FirstOrDefault(expression: x => x.Username == request.Username && x.Password == request.Password);
 
             if(account == null)
             {
@@ -30,6 +31,30 @@ namespace BookManagement.API.Controllers
             }
 
             return Ok(new { accessToken = _jwtService.GenerateJSONWebToken(account) });
+        }
+
+
+        [HttpPost("register")]
+        public async Task<IActionResult> register([FromBody] LoginRequest request)
+        {
+
+            var account = _accountRepository.FirstOrDefault(expression: x => x.Username == request.Username);
+
+            if (account != null)
+            {
+                return BadRequest();
+            }
+
+            Account newAccount = new Account()
+            {
+                Password = request.Password,
+                Username = request.Username,
+                Role = Role.User
+            };
+
+            _accountRepository.Add(newAccount);
+
+            return Ok();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace BookManagement.API.Controllers
 {
     [ApiController]
     [Route("books")]
-    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Admin")]
+    
     public class BookController : ODataController
     {
 
@@ -22,6 +22,7 @@ namespace BookManagement.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,User")]
         [EnableQuery]
         public IActionResult Get()
         {
@@ -29,16 +30,18 @@ namespace BookManagement.API.Controllers
             return Ok(booksQuery);
         }
 
-        [HttpGet("{key}")]
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,User")]
         [EnableQuery]
-        public IActionResult Get(int key)
+        public IActionResult Get(int id)
         {
-            return Ok(_bookRepository.FirstOrDefault(expression: x => x.Id == key, includeFunc: query => query.Include(x => x.Press).Include(x => x.Location)));
+            return Ok(_bookRepository.FirstOrDefault(expression: x => x.Id == id, includeFunc: query => query.Include(x => x.Press).Include(x => x.Location)));
         }
 
         [HttpPost]
         [EnableQuery]
-        public IActionResult Post([FromBody] CreateBookRequest request)
+        [Authorize(Roles = "Admin")]
+        public IActionResult Post([FromBody] BookRequest request)
         {
             Book book = new Book()
             {
@@ -58,12 +61,37 @@ namespace BookManagement.API.Controllers
             return Ok();
         }
 
+        [HttpPut("{id}")]
+        [EnableQuery]
+        [Authorize(Roles = "Admin")]
+        public IActionResult Put(int id, [FromBody] BookRequest request)
+        {
+            var book = _bookRepository.FirstOrDefault(expression: x => x.Id == id, includeFunc: x => x.Include(book => book.Location));
+
+            if(book == null)
+            {
+                return BadRequest();
+            }
+
+            book.Author = request.Author;
+            book.ISBN = request.ISBN;
+            book.Location.City = request.Location.City;
+            book.Location.Street = request.Location.Street;
+            book.PressId = request.PressId;
+            book.Title = request.Title;
+            book.Price = request.Price;
+
+            _bookRepository.Update(book);
+            return Ok();
+        }
+
         [HttpDelete("{key}")]
         [EnableQuery]
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int key)
         {
-            var book = _bookRepository.FirstOrDefault(expression: x => x.Id == key, includeFunc: query => query.Include(x => x.Press).Include(x => x.Location));
-            if (book == null) return NotFound();
+            var book = _bookRepository.FirstOrDefault(expression: x => x.Id == key, includeFunc: query => query.Include(x => x.Location));
+            if (book == null) return BadRequest();
 
             _bookRepository.Remove(book);
             return Ok();
