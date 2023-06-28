@@ -61,15 +61,15 @@ namespace BookManagement.Infrastructure.Migrations
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Author = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    AddressId = table.Column<int>(type: "int", nullable: false),
+                    LocationBookId = table.Column<int>(type: "int", nullable: false),
                     PressId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Books", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Books_Addresses_AddressId",
-                        column: x => x.AddressId,
+                        name: "FK_Books_Addresses_LocationBookId",
+                        column: x => x.LocationBookId,
                         principalTable: "Addresses",
                         principalColumn: "BookId",
                         onDelete: ReferentialAction.Cascade);
@@ -82,9 +82,9 @@ namespace BookManagement.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Books_AddressId",
+                name: "IX_Books_LocationBookId",
                 table: "Books",
-                column: "AddressId");
+                column: "LocationBookId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Books_PressId",

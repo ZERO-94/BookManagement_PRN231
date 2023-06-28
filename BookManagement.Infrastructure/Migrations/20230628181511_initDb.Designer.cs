@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(BookManagementContext))]
-    [Migration("20230626182714_initDb")]
+    [Migration("20230628181511_initDb")]
     partial class initDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -76,9 +76,6 @@ namespace BookManagement.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int>("AddressId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Author")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -86,6 +83,9 @@ namespace BookManagement.Infrastructure.Migrations
                     b.Property<string>("ISBN")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LocationBookId")
+                        .HasColumnType("int");
 
                     b.Property<int>("PressId")
                         .HasColumnType("int");
@@ -99,7 +99,7 @@ namespace BookManagement.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("LocationBookId");
 
                     b.HasIndex("PressId");
 
@@ -130,7 +130,7 @@ namespace BookManagement.Infrastructure.Migrations
                 {
                     b.HasOne("BookManagement.Infrastructure.Models.Address", "Location")
                         .WithMany()
-                        .HasForeignKey("AddressId")
+                        .HasForeignKey("LocationBookId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

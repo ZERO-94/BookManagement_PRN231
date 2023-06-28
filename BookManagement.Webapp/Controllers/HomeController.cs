@@ -1,5 +1,6 @@
 ﻿using BookManagement.Webapp.Models;
 using Microsoft.AspNetCore.Mvc;
+using NuGet.Common;
 using System.Diagnostics;
 
 namespace BookManagement.Webapp.Controllers
@@ -18,12 +19,20 @@ namespace BookManagement.Webapp.Controllers
 
         public IActionResult Login()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Book");
+            }
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel request)
         {
+            if(User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Book");
+            }
             using (var httpClient = new HttpClient())
             {
                 HttpResponseMessage res = await httpClient.PostAsJsonAsync<LoginModel>(endpoint + "/auth/login", request);
@@ -39,12 +48,20 @@ namespace BookManagement.Webapp.Controllers
 
         public IActionResult Register()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Book");
+            }
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(LoginModel request)
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Book");
+            }
             using (var httpClient = new HttpClient())
             {
                 HttpResponseMessage res = await httpClient.PostAsJsonAsync<LoginModel>(endpoint + "/auth/register", request);
@@ -54,6 +71,12 @@ namespace BookManagement.Webapp.Controllers
                 }
                 return View(request);
             }
+        }
+
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("token");
+            return RedirectToAction("Login");
         }
     }
 
