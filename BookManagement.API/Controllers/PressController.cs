@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BookManagement.API.Controllers
 {
     [ApiController]
-    [Route("presses")]
+    [Route("odata/presses")]
     public class PressController : ODataController
     {
         private readonly IPressRepository _pressRepository;

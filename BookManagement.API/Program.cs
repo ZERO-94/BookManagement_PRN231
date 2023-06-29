@@ -19,9 +19,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 ODataConventionModelBuilder oDataBuilder = new ODataConventionModelBuilder();
-oDataBuilder.EntitySet<Book>("Books");
-oDataBuilder.EntitySet<Press>("Presses");
-oDataBuilder.EntitySet<Account>("Accounts");
+oDataBuilder.EntitySet<Book>("books");
+oDataBuilder.EntitySet<Press>("presses");
+oDataBuilder.EntitySet<Account>("accounts");
 
 builder.Services.AddControllers().AddOData(option => option.Select().Filter().Count().OrderBy().Expand().SetMaxTop(100).AddRouteComponents("odata", oDataBuilder.GetEdmModel()));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

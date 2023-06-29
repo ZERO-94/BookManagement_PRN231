@@ -1,4 +1,4 @@
-﻿@model IEnumerable<BookManagement.Infrastructure.Models.Book>
+﻿@model IEnumerable<BookManagement.Webapp.Models.BookModel>
 
 @{
     ViewData["Title"] = "Index";
@@ -12,6 +12,12 @@
         <a asp-action="Create">Create New</a>
     </p>
 }
+<form asp-action="Index" method="get">
+    <input name="page" value="1" hidden/>
+    <input name="search" value="@(ViewBag.Search)"/>
+    <input type="submit" value="Search" class="btn" /> |
+</form>
+<a asp-action="Index" asp-route-page="1" asp-route-search="">Reset</a>
 <table class="table">
     <thead>
         <tr>
@@ -70,3 +76,16 @@
 }
     </tbody>
 </table>
+@if (ViewBag.Page > 1 && ViewBag.TotalPage > 1) {
+    <a asp-action="Index" asp-route-page="@(ViewBag.Page - 1)" asp-route-search="@(ViewBag.Search)">Previous</a>
+}
+<div class="d-flex gap-2">
+@for(int i=1; i <= ViewBag.TotalPage;i++)
+{
+    <span class="@(i == ViewBag.Page ? "text-blue" : "text-black")">@(i)</span>
+}
+</div>
+@if (ViewBag.Page < ViewBag.TotalPage && ViewBag.TotalPage > 1)
+{
+    <a asp-action="Index" asp-route-page="@(ViewBag.Page + 1)" asp-route-search="@(ViewBag.Search)">Next</a>
+}

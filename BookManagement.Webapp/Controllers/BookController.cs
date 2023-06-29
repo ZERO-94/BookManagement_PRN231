@@ -7,22 +7,40 @@ using System.Net;
 using BookManagement.Webapp.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using BookManagement.Webapp.Models;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BookManagement.Webapp.Controllers
 {
     [Authorize]
     public class BookController : Controller
     {
-        private string endpoint = "https://localhost:7129";
+        private string endpoint = "https://localhost:7129/odata";
         // GET: BookController
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(int page = 1, string search = "")
         {
             using (var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Cookies["token"]);
-                var res = await httpClient.GetFromJsonAsync<List<Book>>(endpoint + "/books");
+                
+                var response = await httpClient.GetAsync(endpoint + $"/books?$count=true&$expand=Location,Press&$skip={(page - 1)*5}&$top=5&$filter=contains(Title,'{search}')");
 
-                return View(res);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var res = JsonConvert.DeserializeObject<ODataResponse<List<BookModel>>>(json);
+                    if (res != null)
+                    {
+                        ViewBag.TotalPage = Math.Ceiling((decimal)(res.Count ?? 1) / 5);
+                        ViewBag.Page = page;
+                        ViewBag.Search = search;
+                        return View(res.Value);
+                    }
+                }
+
+                return View();
             }
         }
 
@@ -32,7 +50,7 @@ namespace BookManagement.Webapp.Controllers
             using (var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Cookies["token"]);
-                var res = await httpClient.GetFromJsonAsync<Book>(endpoint + $"/books/{id}");
+                var res = await httpClient.GetFromJsonAsync<BookModel>(endpoint + $"/books/{id}?$expand=Press,Location");
 
                 return View(res);
             }
@@ -45,9 +63,19 @@ namespace BookManagement.Webapp.Controllers
             using (var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Cookies["token"]);
-                var res = await httpClient.GetFromJsonAsync<List<Press>>(endpoint + $"/presses");
+                var response = await httpClient.GetAsync(endpoint + $"/presses");
 
-                ViewBag.Presses = new SelectList(res?.ToList() ?? new List<Press>(), nameof(Press.Id), nameof(Press.Name));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var res = JsonConvert.DeserializeObject<ODataResponse<List<Press>>>(json);
+                    if (res != null)
+                    {
+                        ViewBag.Presses = new SelectList(res?.Value.ToList() ?? new List<Press>(), nameof(Press.Id), nameof(Press.Name));
+                        return View();
+                    }
+                }
+
                 return View();
             }
         }
@@ -56,14 +84,14 @@ namespace BookManagement.Webapp.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(Book press)
+        public async Task<ActionResult> Create(BookModel press)
         {
             try
             {
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Cookies["token"]);
-                    var res = await httpClient.PostAsJsonAsync<Book>(endpoint + "/books", press);
+                    var res = await httpClient.PostAsJsonAsync<BookModel>(endpoint + "/books", press);
 
                     if (res.IsSuccessStatusCode)
                     {
@@ -88,12 +116,21 @@ namespace BookManagement.Webapp.Controllers
             using (var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Cookies["token"]);
-                var res = await httpClient.GetFromJsonAsync<Book>(endpoint + $"/books/{id}");
+                var res = await httpClient.GetFromJsonAsync<BookModel>(endpoint + $"/books/{id}?$expand=Press,Location");
 
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Cookies["token"]);
-                var resPresses = await httpClient.GetFromJsonAsync<List<Press>>(endpoint + $"/presses");
+                var response = await httpClient.GetAsync(endpoint + $"/presses");
 
-                ViewBag.Presses = new SelectList(resPresses?.ToList() ?? new List<Press>(), nameof(Press.Id), nameof(Press.Name), res.PressId);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var resPresses = JsonConvert.DeserializeObject<ODataResponse<List<Press>>>(json);
+                    if (resPresses != null)
+                    {
+                        ViewBag.Presses = new SelectList(resPresses?.Value.ToList() ?? new List<Press>(), nameof(Press.Id), nameof(Press.Name));
+                        return View(res);
+                    }
+                }
                 return View(res);
             };
         }
@@ -102,14 +139,14 @@ namespace BookManagement.Webapp.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit(int id, Book press)
+        public async Task<ActionResult> Edit(int id, BookModel press)
         {
             try
             {
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Cookies["token"]);
-                    var res = await httpClient.PutAsJsonAsync<Book>(endpoint + $"/books/{id}", press);
+                    var res = await httpClient.PutAsJsonAsync<BookModel>(endpoint + $"/books/{id}", press);
 
                     if (res.IsSuccessStatusCode)
                     {
@@ -132,7 +169,7 @@ namespace BookManagement.Webapp.Controllers
             using (var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Request.Cookies["token"]);
-                var res = await httpClient.GetFromJsonAsync<Book>(endpoint + $"/books/{id}");
+                var res = await httpClient.GetFromJsonAsync<BookModel>(endpoint + $"/books/{id}?$expand=Location,Press");
 
                 return View(res);
             }

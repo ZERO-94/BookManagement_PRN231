@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BookManagement.API.Controllers
 {
     [ApiController]
-    [Route("books")]
+    [Route("odata/books")]
     
     public class BookController : ODataController
     {
@@ -24,8 +24,9 @@ namespace BookManagement.API.Controllers
         [HttpGet]
         [Authorize(Roles = "Admin,User")]
         [EnableQuery]
-        public IActionResult Get()
+        public ActionResult Get()
         {
+            
             var booksQuery = _bookRepository.GetAll(includeFunc: query => query.Include(x => x.Press).Include(x => x.Location));
             return Ok(booksQuery);
         }
